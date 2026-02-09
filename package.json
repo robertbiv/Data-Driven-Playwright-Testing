@@ -1,0 +1,27 @@
+{
+  "name": "data-driven-playwrite-testing",
+  "version": "1.0.0",
+  "description": "Data-driven Playwright test suite for automated task management application testing",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertbiv/Data-Driven-Playwrite-Testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/robertbiv/Data-Driven-Playwrite-Testing/issues"
+  },
+  "homepage": "https://github.com/robertbiv/Data-Driven-Playwrite-Testing#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}
