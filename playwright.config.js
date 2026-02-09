@@ -11,6 +11,8 @@ module.exports = defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
+    // Bypass SSL certificate validation for the test environment
+    // Note: This is acceptable for testing against Netlify-hosted apps with certificate issues
     ignoreHTTPSErrors: true,
   },
   projects: [

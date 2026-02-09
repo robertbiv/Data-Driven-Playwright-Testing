@@ -1,6 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const testData = require('../testData.json');
 
+// Configuration constants
+const LOGIN_TIMEOUT = 10000; // Timeout for login operations in milliseconds
+
 // Helper function to perform login
 async function login(page, email, password) {
   await page.goto('/');
@@ -8,7 +11,7 @@ async function login(page, email, password) {
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
   // Wait for successful login by checking for the Projects heading
-  await page.waitForSelector('h1:has-text("Projects")', { timeout: 10000 });
+  await page.waitForSelector('h1:has-text("Projects")', { timeout: LOGIN_TIMEOUT });
 }
 
 // Helper function to navigate to a project
