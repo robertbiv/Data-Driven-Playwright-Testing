@@ -7,7 +7,8 @@ async function login(page, email, password) {
   await page.fill('input[type="text"]', email);
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
-  await page.waitForURL('**/projects');
+  // Wait for successful login by checking for the Projects heading
+  await page.waitForSelector('h1:has-text("Projects")', { timeout: 10000 });
 }
 
 // Helper function to navigate to a project
@@ -33,7 +34,7 @@ async function verifyTaskTags(page, taskName, expectedTags) {
   
   // Verify each tag is present within the task card
   for (const tag of expectedTags) {
-    const tagLocator = taskCard.locator(`text=${tag}`);
+    const tagLocator = taskCard.locator(`text=${tag}`).first();
     await expect(tagLocator).toBeVisible();
   }
 }
