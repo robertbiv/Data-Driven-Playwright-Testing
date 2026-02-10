@@ -1,4 +1,4 @@
-const { test, expect } = require('./test-fixtures');
+const { test } = require('./test-fixtures');
 const testData = require('../testData.json');
 
 // Data-driven test suite using fixtures for POM instances

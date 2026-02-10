@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/robertbiv/Data-Driven-Playwrite-Testing#readme",
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.58.2",
+    "eslint": "^8.57.1"
   }
 }
