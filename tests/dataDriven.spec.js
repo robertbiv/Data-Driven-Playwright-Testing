@@ -1,63 +1,64 @@
 const { test, expect } = require('@playwright/test');
 const testData = require('../testData.json');
+const { login } = require('./helpers');
 
-// Configuration constants
-const LOGIN_TIMEOUT = 10000; // Timeout for login operations in milliseconds
-
-// Helper function to perform login
-async function login(page, email, password) {
-  await page.goto('/');
-  await page.fill('input[type="text"]', email);
-  await page.fill('input[type="password"]', password);
-  await page.click('button[type="submit"]');
-  // Wait for successful login by checking for the Projects heading
-  await page.waitForSelector('h1:has-text("Projects")', { timeout: LOGIN_TIMEOUT });
-}
-
-// Helper function to navigate to a project
-async function navigateToProject(page, projectName) {
-  await page.click(`text=${projectName}`);
-  await page.waitForLoadState('networkidle');
-}
-
-// Helper function to verify task is in a specific column
-async function verifyTaskInColumn(page, taskName, columnName) {
-  // Locate the column container - using .first() as a defensive approach
-  // Note: In production, this should use data-testid or unique class selectors
-  const columnLocator = page.locator(`div:has-text("${columnName}")`).first();
-  const taskInColumn = columnLocator.locator(`text=${taskName}`);
-  await expect(taskInColumn).toBeVisible();
-}
-
-// Helper function to verify tags for a task
-async function verifyTaskTags(page, taskName, expectedTags) {
-  // Find the task card - using .first() as a defensive approach
-  // Note: In production, this should use data-testid or unique class selectors
-  const taskCard = page.locator(`div:has-text("${taskName}")`).first();
-  
-  // Verify each tag is present within the task card
-  for (const tag of expectedTags) {
-    const tagLocator = taskCard.locator(`text=${tag}`).first();
-    await expect(tagLocator).toBeVisible();
-  }
-}
-
-// Data-driven test suite
+// Data-driven test suite preferring `data-testid` selectors with fallbacks
 test.describe('Data-Driven Task Verification Tests', () => {
-  // Run a test for each test case in the JSON data
   for (const testCase of testData.testCases) {
     test(`Test Case ${testCase.id}: Verify "${testCase.task}" in ${testCase.project}`, async ({ page }) => {
-      // Step 1: Login to the application
+      // Login using helper (POM)
       await login(page, testData.loginCredentials.email, testData.loginCredentials.password);
-      
-      // Step 2: Navigate to the specific project
-      await navigateToProject(page, testCase.project);
-      
-      // Step 3: Verify the task is in the correct column
-      await verifyTaskInColumn(page, testCase.task, testCase.column);
-      
-      // Step 4: Verify the task has the correct tags
-      await verifyTaskTags(page, testCase.task, testCase.tags);
+
+      // Navigate to project: prefer testid, then role, then text
+      const projectTestId = `project-${testCase.project.replace(/\s+/g, '-').toLowerCase()}`;
+      if (await page.getByTestId(projectTestId).count()) {
+        await page.getByTestId(projectTestId).click();
+      } else if (await page.getByRole('link', { name: testCase.project }).count()) {
+        await page.getByRole('link', { name: testCase.project }).first().click();
+      } else {
+        await page.click(`text=${testCase.project}`);
+      }
+      await page.waitForLoadState('networkidle');
+
+      // Verify task is in correct column: prefer column testid
+      const columnTestId = `column-${testCase.column.replace(/\s+/g, '-').toLowerCase()}`;
+      if (await page.getByTestId(columnTestId).count()) {
+        const column = page.getByTestId(columnTestId);
+        const taskTestId = `task-${testCase.id}`;
+        if (await column.getByTestId(taskTestId).count()) {
+          await expect(column.getByTestId(taskTestId).first()).toBeVisible();
+        } else {
+          await expect(column.getByText(testCase.task).first()).toBeVisible();
+        }
+      } else if (await page.getByRole('region', { name: testCase.column }).count()) {
+        const column = page.getByRole('region', { name: testCase.column }).first();
+        await expect(column.getByText(testCase.task).first()).toBeVisible();
+      } else {
+        const columnLocator = page.locator(`div:has-text("${testCase.column}")`).first();
+        const taskInColumn = columnLocator.locator(`text=${testCase.task}`);
+        await expect(taskInColumn).toBeVisible();
+      }
+
+      // Verify tags for the task: prefer task testid then tag testids
+      const taskTestId = `task-${testCase.id}`;
+      let taskCard;
+      if (await page.getByTestId(taskTestId).count()) {
+        taskCard = page.getByTestId(taskTestId);
+      } else {
+        taskCard = page.locator(`div:has-text("${testCase.task}")`).first();
+      }
+
+      for (const tag of testCase.tags) {
+        const tagTestId = `tag-${tag.replace(/\s+/g, '-').toLowerCase()}`;
+        if (await taskCard.getByTestId(tagTestId).count()) {
+          await expect(taskCard.getByTestId(tagTestId).first()).toBeVisible();
+        } else if (await taskCard.getByText(tag).count()) {
+          await expect(taskCard.getByText(tag).first()).toBeVisible();
+        } else {
+          const tagLocator = taskCard.locator(`text=${tag}`);
+          await expect(tagLocator).toBeVisible();
+        }
+      }
     });
   }
 });
