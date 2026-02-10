@@ -6,8 +6,10 @@ module.exports = defineConfig({
   retries: 0,
   workers: 1,
   reporter: [['html'], ['list']],
+  globalSetup: require.resolve('./global-setup'),
   use: {
     baseURL: 'https://animated-gingersnap-8cf7f2.netlify.app/',
+    storageState: 'storageState.json',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
