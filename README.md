@@ -1,37 +1,68 @@
 # Data-Driven Playwright Testing
 
+Lightweight Playwright test suite for a task-management demo app. Tests are data-driven using `testData.json` and organized with page objects under `tests/pages/`.
+
+## Badges
+
 [![Playwright Tests](https://github.com/robertbiv/Data-Driven-Playwright-Testing/actions/workflows/playwright.yml/badge.svg)](https://github.com/robertbiv/Data-Driven-Playwright-Testing/actions/workflows/playwright.yml)
 
-This project runs data-driven Playwright tests against a task management demo app.
+## Prerequisites
 
-## Quick Start
+- Node.js 16+ and npm
+- Git (optional)
+
+## Install
+
+Install dependencies and Playwright browsers:
 
 ```bash
 npm install
-npx playwright install
+npx playwright install --with-deps
+```
+
+## Run Tests
+
+- Run the full test suite (headless):
+
+```bash
 npm test
 ```
 
-## How It Works
-
-- Test data lives in `testData.json`.
-- The spec iterates each test case and verifies tasks in the correct columns and tags.
-- Page Objects live under `tests/pages/` and keep selectors centralized.
-- A global setup logs in once and stores auth state in `storageState.json`.
-
-## Selector Conventions
-
-For more robust selectors, add `data-testid` attributes in the app:
-
-- Project buttons: `project-<slug>` (example: `project-web-application`)
-- Columns: `column-<slug>` (example: `column-to-do`)
-- Task cards: `task-<id>`
-- Tags: `tag-<slug>` (example: `tag-high-priority`)
-
-## Reports
-
-To open the last HTML report:
+- Run headed tests:
 
 ```bash
-npx playwright show-report
+npm run test:headed
 ```
+
+- Open the HTML report after a run:
+
+```bash
+npm run report
+```
+
+## Project Structure
+
+- `tests/` — test specs, helpers, fixtures, and page objects
+- `testData.json` — external test cases used by the spec
+- `playwright.config.js` — Playwright configuration
+- `global-setup.js` — optional global setup (login, auth state)
+
+## How the Suite Works
+
+- Data-driven: the spec reads `testData.json` and runs a scenario per entry.
+- Page objects (in `tests/pages/`) centralize selectors and actions.
+- Auth state can be cached to speed up runs (see `global-setup.js`).
+
+## Adding Tests
+
+1. Add or update a case in `testData.json`.
+2. Add/modify a test in `tests/` that consumes the new data.
+3. Reuse or extend page objects under `tests/pages/`.
+
+## Selector Recommendations
+
+Prefer stable attributes such as `data-testid` for selectors:
+
+- `data-testid="project-<slug>"` for project links
+- `data-testid="column-<slug>"` for columns
+- `data-testid="task-<id>"` for task cards
