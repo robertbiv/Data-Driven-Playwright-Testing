@@ -10,6 +10,7 @@ module.exports = defineConfig({
   use: {
     baseURL: 'https://animated-gingersnap-8cf7f2.netlify.app/',
     storageState: 'storageState.json',
+    headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
@@ -23,6 +24,18 @@ module.exports = defineConfig({
       use: { 
         browserName: 'chromium',
         headless: true,
+      },
+    },
+    {
+      name: 'firefox',
+      use: {
+        browserName: 'firefox',
+      },
+    },
+    {
+      name: 'webkit',
+      use: {
+        browserName: 'webkit',
       },
     },
   ],
