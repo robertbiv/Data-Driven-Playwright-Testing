@@ -1,8 +1,5 @@
 {
-  "loginCredentials": {
-    "email": "[USE_GITHUB_SECRET:TEST_EMAIL]",
-    "password": "[USE_GITHUB_SECRET:TEST_PASSWORD]"
-  },
+  "loginCredentials": {},
   "testCases": [
     {
       "id": 1,

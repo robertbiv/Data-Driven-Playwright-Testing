@@ -9,26 +9,28 @@ class ProjectPage {
     this.page = page;
   }
 
-  /*
-   Recommended app changes for robust selectors:
-   - Add `data-testid="project-<slug>"` to each project button
-   - Add `data-testid="column-<slug>"` to each column container
-   - Add `data-testid="task-<id>"` to task cards when possible
-   - Add `data-testid="tag-<slug>"` to tags
-  */
   async navigateToProject(projectName) {
-    // Ensure we start from the project list view
+    // start from project list view
     await this.page.goto('/');
-
     const projectTestId = `project-${slugify(projectName)}`;
+    // locate and click the project
     if (await this.page.getByTestId(projectTestId).count()) {
-      await this.page.getByTestId(projectTestId).first().click();
+      const el = this.page.getByTestId(projectTestId).first();
+      await el.waitFor({ state: 'visible', timeout: 8000 });
+      await el.scrollIntoViewIfNeeded();
+      await el.click();
     } else if (await this.page.getByRole('button', { name: projectName }).count()) {
-      await this.page.getByRole('button', { name: projectName }).first().click();
+      const el = this.page.getByRole('button', { name: projectName }).first();
+      await el.waitFor({ state: 'visible', timeout: 8000 });
+      await el.click();
     } else if (await this.page.getByRole('link', { name: projectName }).count()) {
-      await this.page.getByRole('link', { name: projectName }).first().click();
+      const el = this.page.getByRole('link', { name: projectName }).first();
+      await el.waitFor({ state: 'visible', timeout: 8000 });
+      await el.click();
     } else {
-      await this.page.click(`text=${projectName}`);
+      const textLocator = this.page.locator(`text="${projectName}"`);
+      await textLocator.first().waitFor({ state: 'visible', timeout: 8000 });
+      await textLocator.first().click();
     }
     await this.page.waitForLoadState('networkidle');
   }
@@ -51,12 +53,35 @@ class ProjectPage {
       }
     }
 
+    // locate task in the column
+    const taskTestId = `task-${slugify(taskName)}`;
+    if (await columnLocator.getByTestId(taskTestId).count()) {
+      await expect(columnLocator.getByTestId(taskTestId).first()).toBeVisible();
+      return;
+    }
+
     const taskHeading = columnLocator.getByRole('heading', { name: taskName });
     if (await taskHeading.count()) {
       await expect(taskHeading.first()).toBeVisible();
-    } else {
-      await expect(columnLocator.getByText(taskName).first()).toBeVisible();
+      return;
     }
+
+    // handle articles or list items
+    if (await columnLocator.getByRole('article', { name: taskName }).count()) {
+      await expect(columnLocator.getByRole('article', { name: taskName }).first()).toBeVisible();
+      return;
+    }
+
+    if (await columnLocator.getByRole('listitem').count()) {
+      const candidate = columnLocator.getByRole('listitem').filter({ hasText: taskName }).first();
+      if (await candidate.count()) {
+        await expect(candidate).toBeVisible();
+        return;
+      }
+    }
+
+    // final fallback: exact text match
+    await expect(columnLocator.getByText(taskName, { exact: true }).first()).toBeVisible();
   }
 
   async verifyTaskTags(taskName, expectedTags) {
@@ -74,13 +99,24 @@ class ProjectPage {
 
     for (const tag of expectedTags) {
       const tagTestId = `tag-${slugify(tag)}`;
+      const tagRegex = new RegExp(`^${escapeRegExp(tag)}$`, 'i');
+
       if (await taskCard.getByTestId(tagTestId).count()) {
         await expect(taskCard.getByTestId(tagTestId).first()).toBeVisible();
-      } else if (await taskCard.getByText(tag, { exact: true }).count()) {
-        await expect(taskCard.getByText(tag, { exact: true }).first()).toBeVisible();
-      } else {
-        await expect(taskCard.getByText(tag).first()).toBeVisible();
+        continue;
       }
+
+      if (await taskCard.getByRole('button', { name: tagRegex }).count()) {
+        await expect(taskCard.getByRole('button', { name: tagRegex }).first()).toBeVisible();
+        continue;
+      }
+
+      if (await taskCard.getByText(tag, { exact: true }).count()) {
+        await expect(taskCard.getByText(tag, { exact: true }).first()).toBeVisible();
+        continue;
+      }
+
+      await expect(taskCard.getByText(tag, { timeout: 5000 }).first()).toBeVisible();
     }
   }
 }

@@ -1,5 +1,7 @@
 # Data-Driven Playwright Testing
 
+[![Playwright Tests](https://github.com/robertbiv/Data-Driven-Playwright-Testing/actions/workflows/playwright.yml/badge.svg)](https://github.com/robertbiv/Data-Driven-Playwright-Testing/actions/workflows/playwright.yml)
+
 This project runs data-driven Playwright tests against a task management demo app.
 
 ## Quick Start
